@@ -1,6 +1,7 @@
 name: Build Jupyter image
 on:
-  - push
+  push:
+  workflow_dispatch: 
 
 jobs:
   build:
