@@ -1,0 +1,24 @@
+name: Build Jupyter image
+on:
+  - push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set variables
+        id: vars
+        run: |
+          echo ::set-output name=docker_image_1::ghcr.io/${{ github.repository }}/master:latest
+          echo ::set-output name=docker_image_2::ghcr.io/${{ github.repository }}/master:$(git rev-parse --short=7 ${{ github.sha }})
+      - name: Build docker image
+        run: |
+          docker build . --file Dockerfile -t ${{ steps.vars.outputs.docker_image_1 }} -t ${{ steps.vars.outputs.docker_image_2 }} --no-cache --progress=plain
+      - name: Login to registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io --username ${{ github.actor }} --password-stdin
+      - name: Push docker image
+        run: |
+          docker push ${{ steps.vars.outputs.docker_image_1 }}
+          docker push ${{ steps.vars.outputs.docker_image_2 }}
